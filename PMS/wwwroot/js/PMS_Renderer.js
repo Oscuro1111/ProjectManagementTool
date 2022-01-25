@@ -49,3 +49,43 @@ function GetRender() {
 
 }
 
+
+function IframeRender(event, targetId, url, attachTo) {
+
+    let target = getById(targetId);
+
+    
+    target.addEventListener(event, function (e) {
+
+        e.preventDefault();
+
+        let attach = getById(attachTo);
+
+        let atr = Array.prototype.forEach.bind(attach.children);
+        let check = 0;
+
+        atr(e => {
+            if (e.nodeName == "IFRAME") {
+                check = 1;
+            }
+        });
+        //found other Iframe
+        if (check==1) {
+            return;
+        }
+
+        const iframe = document.createElement("iframe");
+
+        iframe.src = url;
+        iframe.width = "100%";
+        iframe.height = "100%";
+
+
+        attach.style.height = "100vh";
+
+          attach.append(iframe);        
+
+    });
+
+}
+
