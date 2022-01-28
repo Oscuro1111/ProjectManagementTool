@@ -19,8 +19,6 @@ const BoardController = (
                 </div>      
             </div>
             <div class="kanban-items-container scrollbar" tabindex=${dbId}> 
-               
-
                 <form class="add-card-form mt-3" id=PMS-Kanban-Column-AddListCardForm-${dbId}>
                     <textarea class="form-control" data-input="add-card" rows="2" placeholder="Enter a title for this card..."></textarea>
                     <div class="row gx-2 mt-2">
@@ -109,24 +107,22 @@ const BoardController = (
                  PMS_Board_State.dragOver = over;
                  PMS_Board_State.draggingSrc = src;
 
-                 PMS_Board_State.dragOverContainer = overContainer;
-                 const PMS_Board_State={
-     
-                     dragOver:null,
+                 PMS_Board_State.dragOverContainer = overContainer.children[1];
+                
+                    
               });
               
               droppable.on('drag:stop', (e) => {
 
-                console.log(PMS_Board_State);
+               
         
                 
              setTimeout(()=>{
-                if(PMS_Board_State.dragOverContainer==PMS_Board_State.dragOver.parentElement)
                 PMS_Board_State.dragOverContainer
                          .insertBefore(PMS_Board_State.draggingSrc,PMS_Board_State.dragOver);//new ,oldChild
                     var  srcele = e.data.originalSource;
                     srcele.parentElement.className="kanban-items-container scrollbar";
-                },400);
+                },100);
               });
                   boardContainer.appendChild(columnForAdd);
                 });
