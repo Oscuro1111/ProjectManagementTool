@@ -69,10 +69,16 @@ function IframeRender(event, targetId, url, attachTo) {
                 check = 1;
             }
         });
+        
         //found other Iframe
         if (check==1) {
             return;
         }
+
+        atr(ele=>{
+          attach.removeChild(ele); 
+        });
+        
 
         const iframe = document.createElement("iframe");
 

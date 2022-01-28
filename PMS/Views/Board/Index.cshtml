@@ -234,7 +234,7 @@
                         </div>
                     </div>
                     <div class="col-auto d-flex align-items-center">
-                        <button class="btn btn-sm btn-falcon-default me-2 d-none d-md-block"><span class="fas fa-plus me-2"></span>Add Column</button>
+                        <button class="btn btn-sm btn-falcon-default me-2 d-none d-md-block"><span class="fas fa-plus me-2" id="PMS-Kanban-Board-AddColumn"></span>Add Column</button>
                         <div class="dropdown font-sans-serif">
                             <button class="btn btn-sm btn-falcon-default dropdown-toggle dropdown-caret-none" type="button" id="kanbanMenu" data-bs-toggle="dropdown" data-boundary="viewport" aria-haspopup="true" aria-expanded="false"><span class="fas fa-ellipsis-h"></span></button>
                             <div class="dropdown-menu dropdown-menu-end border py-2" aria-labelledby="kanbanMenu">
@@ -245,8 +245,8 @@
                         </div>
                     </div>
                 </div>
-                <div class="kanban-container scrollbar me-n3">
-                    <div class="kanban-column">
+                <div class="kanban-container scrollbar me-n3" id="PMS-Kanban-Board">
+                    <div class="kanban-column" id="PMS-Root-Column">
                         <div class="kanban-column-header">
                             <h5 class="fs-0 mb-0">Documentation <span class="text-500">(8)</span></h5>
                             <div class="dropdown font-sans-serif btn-reveal-trigger">
@@ -832,13 +832,13 @@
                             <button class="btn btn-link btn-sm d-block w-100 btn-add-card text-decoration-none text-600" type="button"><span class="fas fa-plus me-2"></span>Add another card</button>
                         </div>
                     </div>
-                    <div class="kanban-column">
+                    <div class="kanban-column" id="PMS-Kanban-board-WithAddColumnForm">
                         <div class="collapse bg-100 p-card rounded-lg transition-none" id="addListForm">
-                            <form>
-                                <textarea class="form-control mb-2" data-input="add-list" rows="2" placeholder="Enter list title..."></textarea>
+                            <form id="PMS-Kanban-column-Form">
+                                <textarea class="form-control mb-2" data-input="add-list" rows="2" name="title" placeholder="Enter list title..."></textarea>
                                 <div class="row gx-2">
                                     <div class="col">
-                                        <button class="btn btn-primary btn-sm d-block w-100" type="button">Add</button>
+                                        <button class="btn btn-primary btn-sm d-block w-100" type="button" id="PMS-Kanban-AddColumn-Btn">Add</button>
                                     </div>
                                     <div class="col">
                                         <button class="btn btn-outline-secondary btn-sm d-block w-100 border-400" type="button" data-dismiss="collapse">Cancel</button>
@@ -846,7 +846,7 @@
                                 </div>
                             </form>
                         </div>
-                        <button class="btn d-block w-100 btn-secondary bg-400 border-400" data-bs-toggle="collapse" data-bs-target="#addListForm" aria-expanded="false" aria-controls="addListForm"><span class="fas fa-plus me-1"> </span>Add another list</button>
+                        <button class="btn d-block w-100 btn-secondary bg-400 border-400" id="PMS-Kanban-ShowAddForm-Btn" data-bs-toggle="collapse" data-bs-target="#addListForm" aria-expanded="false" aria-controls="addListForm"><span class="fas fa-plus me-1"> </span>Add another list</button>
                     </div>
                 </div>
             </div>
@@ -2313,12 +2313,18 @@
     <script src="../vendors/anchorjs/anchor.min.js"></script>
     <script src="../vendors/is/is.min.js"></script>
     <script src="../vendors/glightbox/glightbox.min.js"></script>
-    <script src="../vendors/draggable/draggable.bundle.legacy.js"></script>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="/node_modules/draggableAPI/draggable/lib/es5/draggable.bundle.js"></script>
+    
     <script src="../vendors/fontawesome/all.min.js"></script>
     <script src="../vendors/lodash/lodash.min.js"></script>
     <script src="https://polyfill.io/v3/polyfill.min.js?features=window.scroll"></script>
     <script src="../vendors/list.js/list.min.js"></script>
     <script src="../assets/js/theme.js"></script>
+      <script src="~/js/globals.js"></script>
+    <script src="/js/PMS_Renderer.js"></script>
+    <script src="/js/modules/Board/BoardControllers.js"></script>
 
 </body>
 

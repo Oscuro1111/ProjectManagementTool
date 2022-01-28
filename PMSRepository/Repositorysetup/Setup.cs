@@ -7,13 +7,13 @@ namespace PMSRepository.Repositorysetup
 {
    public class Setup
     {
-        
+
         public static void ConfigureRepository(IServiceCollection services,IConfiguration config)
         {
             services.AddScoped(typeof(IPMSRepository<>), typeof(PMSRepository<>));
 
             services.AddDbContext<Context.PMSContext>(
-           options => options.UseSqlServer(config.GetConnectionString("VHS_DB")));
+           options => options.UseSqlServer(config.GetConnectionString("AUTH_PMS_DB")));
         }
     }
 }
