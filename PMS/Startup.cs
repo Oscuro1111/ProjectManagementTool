@@ -41,8 +41,11 @@ namespace PMS
             app.UseSession();
             if (env.IsDevelopment())
             {
+                //development
                 app.UseDeveloperExceptionPage();
+                
             }
+            
             else
             {
                 app.UseExceptionHandler("/Home/Error");
