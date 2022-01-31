@@ -1,7 +1,5 @@
 
 const BoardController = (
-
-
     dom => {
 
         const getById = (id) => dom.getElementById(id);
@@ -19,11 +17,11 @@ const BoardController = (
                 </div>      
             </div>
             <div class="kanban-items-container scrollbar" tabindex=${dbId}> 
-                <form class="add-card-form mt-3" id=PMS-Kanban-Column-AddListCardForm-${dbId}>
+                <form class="add-card-form mt-3" id=PMS-"Kanban-Column-AddListCardForm-${dbId}">
                     <textarea class="form-control" data-input="add-card" rows="2" placeholder="Enter a title for this card..."></textarea>
                     <div class="row gx-2 mt-2">
                         <div class="col">
-                            <button class="btn btn-primary btn-sm d-block w-100" type="button" id=PMS-Btn-Kanban-Column-AddCardForm-AddBtn-${dbId}>Add</button>
+                            <button class="btn btn-primary btn-sm d-block w-100" type="button" id="PMS-Btn-Kanban-Column-AddCardForm-AddBtn-${dbId}">Add</button>
                         </div>
                         <div class="col">
                             <button class="btn btn-outline-secondary btn-sm d-block w-100 border-400" type="button" data-btn-form="hide" id=PMS-Btn-Kanban-Column-AddCardForm-CancelBtn-${dbId}>Cancel</button>
@@ -32,7 +30,8 @@ const BoardController = (
                 </form>
             </div>
             <div class="kanban-column-footer">
-                <button class="btn btn-link btn-sm d-block w-100 btn-add-card text-decoration-none text-600" type="button" id=PMS-Btn-Kanban-Column-AddAnotherCard-${dbId}><svg class="svg-inline--fa fa-plus fa-w-14 me-2" aria-hidden="true" focusable="false" data-prefix="fas" data-icon="plus" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" data-fa-i2svg=""><path fill="currentColor" d="M416 208H272V64c0-17.67-14.33-32-32-32h-32c-17.67 0-32 14.33-32 32v144H32c-17.67 0-32 14.33-32 32v32c0 17.67 14.33 32 32 32h144v144c0 17.67 14.33 32 32 32h32c17.67 0 32-14.33 32-32V304h144c17.67 0 32-14.33 32-32v-32c0-17.67-14.33-32-32-32z"></path></svg><!-- <span class="fas fa-plus me-2"></span> Font Awesome fontawesome.com -->Add another card</button>
+                <button class="btn btn-link btn-sm d-block w-100 btn-add-card text-decoration-none text-600" type="button" data-add-card="add-card-item" id="PMS-Btn-Kanban-Column-AddAnotherCard-${dbId}"><svg class="svg-inline--fa fa-plus fa-w-14 me-2" aria-hidden="true" focusable="false" data-prefix="fas" data-icon="plus" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" data-fa-i2svg="">
+                <path fill="currentColor" d="M416 208H272V64c0-17.67-14.33-32-32-32h-32c-17.67 0-32 14.33-32 32v144H32c-17.67 0-32 14.33-32 32v32c0 17.67 14.33 32 32 32h144v144c0 17.67 14.33 32 32 32h32c17.67 0 32-14.33 32-32V304h144c17.67 0 32-14.33 32-32v-32c0-17.67-14.33-32-32-32z"></path></svg><!-- <span class="fas fa-plus me-2"></span> Font Awesome fontawesome.com -->Add another card</button>
             </div>
         </div>`;
 
@@ -64,8 +63,16 @@ const BoardController = (
             "AddColumnBtn": "PMS-Kanban-AddColumn-Btn",
             // "ShowAddColumnForm":"PMS-Kanban-ShowAddForm-Btn",
             "AddColumnForm": "PMS-Kanban-column-Form",
-            "RootColumn":"PMS-Root-Column"
+            "RootColumn":"PMS-Root-Column",
+            
         };
+
+
+        const ComponentsClass={
+            "AddCardForm":"add-card-form",
+            "BtnAddCard":"btn-add-card"
+        };
+
 
         const Init = function () {
 
@@ -116,9 +123,7 @@ const BoardController = (
                  PMS_Board_State.draggingSrc = src;
                  PMS_Board_State.dragOverContainer = overContainer.children[1];
               });
-              
               droppable.on('drag:stop', (e) => {
-
              setTimeout(()=>{
                 PMS_Board_State.dragOverContainer
                          .insertBefore(PMS_Board_State.draggingSrc,PMS_Board_State.dragOver);//new ,oldChild
@@ -126,7 +131,6 @@ const BoardController = (
                     srcele.parentElement.className="kanban-items-container scrollbar";
                 },100);
               });
-
                   boardContainer.appendChild(columnForAdd);
                 });
             }

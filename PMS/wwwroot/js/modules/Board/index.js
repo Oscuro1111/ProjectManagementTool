@@ -1,6 +1,4 @@
 ﻿const BoardModule = (dom => {
-
-
     const attachTarget = "Btn_Board";
     const onEvent = "click";
     const renderTarget = Views.MainContainer;
@@ -10,8 +8,7 @@
         null,
         null,
     );
-
-
+    
     const onDone = (target, response) => {
 
         if (target && response) {
@@ -25,9 +22,7 @@
                 console.error(err);
             });
         }
-
     }
-
     return {
         onEvent: onEvent,
         attachTarget: attachTarget,
