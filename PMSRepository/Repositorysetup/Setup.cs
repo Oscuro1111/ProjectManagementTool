@@ -13,7 +13,7 @@ namespace PMSRepository.Repositorysetup
             services.AddScoped(typeof(IPMSRepository<>), typeof(PMSRepository<>));
 
             services.AddDbContext<Context.PMSContext>(
-           options => options.UseSqlServer(config.GetConnectionString("AUTH_PMS_DB")));
+           options => options.UseSqlServer(config.GetConnectionString("WIN_PMS_DB")));
         }
     }
 }

@@ -1,13 +1,12 @@
-
 const BoardController = (
     dom => {
 
         const getById = (id) => dom.getElementById(id);
 
         const BoardViews = function BoardComponentViews() {
-            this.column = (columnHeaderTitle, dbId,totalItems) => `<div class="kanban-column" id=PMS-Kanban-Column-${dbId}>
+            this.column = (columnHeaderTitle, dbId, totalItems) => `<div class="kanban-column" id=PMS-Kanban-Column-${dbId}>
             <div class="kanban-column-header" id=PMS-Kanban-Column-Header-${dbId}>
-                <h5 class="fs-0 mb-0">${columnHeaderTitle}<span class="text-500">(${totalItems})</span></h5>
+                <h5 class="fs-0 mb-0">${columnHeaderTitle}<span class="text-500" data-total-items="total-items">(${totalItems})</span></h5>
                 <div class="dropdown font-sans-serif btn-reveal-trigger">
                     <button class="btn btn-sm btn-reveal py-0 px-2" type="button" id="PMS-kanbanColumn-${dbId}" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><svg class="svg-inline--fa fa-ellipsis-h fa-w-16" aria-hidden="true" focusable="false" data-prefix="fas" data-icon="ellipsis-h" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" data-fa-i2svg=""><path fill="currentColor" d="M328 256c0 39.8-32.2 72-72 72s-72-32.2-72-72 32.2-72 72-72 72 32.2 72 72zm104-72c-39.8 0-72 32.2-72 72s32.2 72 72 72 72-32.2 72-72-32.2-72-72-72zm-352 0c-39.8 0-72 32.2-72 72s32.2 72 72 72 72-32.2 72-72-32.2-72-72-72z"></path></svg><!-- <span class="fas fa-ellipsis-h"></span> Font Awesome fontawesome.com --></button>
                     <div class="dropdown-menu dropdown-menu-end py-0" aria-labelledby="PMS-kanbanColumn-${dbId}">
@@ -17,14 +16,14 @@ const BoardController = (
                 </div>      
             </div>
             <div class="kanban-items-container scrollbar" tabindex=${dbId}> 
-                <form class="add-card-form mt-3" id=PMS-"Kanban-Column-AddListCardForm-${dbId}">
-                    <textarea class="form-control" data-input="add-card" rows="2" placeholder="Enter a title for this card..."></textarea>
+                <form class="add-card-form mt-3" id="PMS-Kanban-Column-AddListCardForm-${dbId}">
+                    <textarea class="form-control" data-input="add-card" rows="2" placeholder="Enter a title for this card..." name="taskTitle" required></textarea>
                     <div class="row gx-2 mt-2">
                         <div class="col">
-                            <button class="btn btn-primary btn-sm d-block w-100" type="button" id="PMS-Btn-Kanban-Column-AddCardForm-AddBtn-${dbId}">Add</button>
+                            <button class="btn btn-primary btn-sm d-block w-100 pms-kanban-btn-add-item" data-id=${dbId} type="button" id="PMS-Btn-Kanban-Column-AddCardForm-AddBtn-${dbId}">Add</button>
                         </div>
                         <div class="col">
-                            <button class="btn btn-outline-secondary btn-sm d-block w-100 border-400" type="button" data-btn-form="hide" id=PMS-Btn-Kanban-Column-AddCardForm-CancelBtn-${dbId}>Cancel</button>
+                            <button class="btn btn-outline-secondary btn-sm d-block w-100 border-400 pms-kanban-btn-cancel-item" type="button" data-id=${dbId} data-btn-form="hide" id=PMS-Btn-Kanban-Column-AddCardForm-CancelBtn-${dbId}>Cancel</button>
                         </div>
                     </div>
                 </form>
@@ -66,22 +65,78 @@ const BoardController = (
             "RootColumn":"PMS-Root-Column",
             
         };
-
-
-        const ComponentsClass={
-            "AddCardForm":"add-card-form",
-            "BtnAddCard":"btn-add-card"
-        };
-
-
         const Init = function () {
 
-            const PMS_Board_State={
+            const RestEventForAddItems = (column) => {
 
-                dragOver:null,
-                dragOverContainer:null,
-                draggingSrc:null,
-            };
+                if ($) {
+
+                    //Add  Button  handler
+                    $(column).find("button[class~='btn-add-card']").click(function (e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+
+                         e.target.parentElement.parentElement.className += " form-added";
+                    });
+
+                    //Cancle button handler
+                    $(column).find("button[class~='pms-kanban-btn-cancel-item']").click(e => {
+                        e.preventDefault();
+                        e.stopPropagation();
+
+                        column.className = (column.className + "").replace(/\sform-added/gi, "");
+
+                        console.log(column.className);
+
+                    });
+
+
+
+                    $(column).find("button[class~='pms-kanban-btn-add-item']").click(function (e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+
+                        let formId = `PMS-Kanban-Column-AddListCardForm-${$(e.target).attr("data-id")}`;
+
+                        let formElement = null;
+
+                        let form = new FormData((formElement = $(column).find(`form#${formId}`)[0]));
+
+                        if (form) {
+
+                            let value = form.get("taskTitle") || "";
+
+                            
+                            if (value.length == 0) {
+
+                                alert("Task title cannot be empty!");
+                                return;
+                            }
+
+                            //Handle Putting new Task item into kanban column
+                            (
+                                _=> {
+                                     let views = new BoardViews();
+
+                                     let kanbanContainer = formElement.parentElement;
+
+                                     kanbanContainer.removeChild(formElement);
+
+                                     kanbanContainer.innerHTML += views.columnItem(value, kanbanContainer.children.length);
+
+                                     kanbanContainer.appendChild(formElement);
+                                }
+                            )();//END
+
+
+
+
+
+
+                        }
+                    });
+                }
+            }
             const boardContainer = getById(ComponentsId.BoardContainer);
             const boardAddColumnBtn = getById(ComponentsId.AddColumnBtn);
 
@@ -92,9 +147,11 @@ const BoardController = (
             if (boardAddColumnBtn && boardContainer) {
 
                 boardAddColumnBtn.addEventListener("click", function (e) {
+
                     e.preventDefault();
                     e.stopPropagation();
-                   let views = new BoardViews();
+
+                    let views = new BoardViews();
                     let formData = new FormData(form);
                     let title = formData.get("title");
 
@@ -103,38 +160,63 @@ const BoardController = (
                         return;
                     }
                    boardContainer.removeChild(columnForAdd); 
-                 
-                  // var x =  $(rootCol).clone();
-                   boardContainer.innerHTML+=views.column(title, boardContainer.children.length,boardContainer.children.length);
-       
-             const droppable = new Draggable.Droppable(document.querySelectorAll(".kanban-column"), {
-                draggable: 'div.kanban-item',
-                dropzone: 'div.kanban-items-container'
-              });
 
-              droppable.on('drag:over',(e)=>{
+                    //IMPORTANT NOTE:
+                    //Doing This will force re-render the while parent node in which this appending 
+                    //Re-rendering will create new nodes and old and any events will  be removeds so 
+                    //Resetting the event  if any attached to prev one .
+                    boardContainer.innerHTML += views.column(title, boardContainer.children.length, boardContainer.children.length);
 
-                 var src = e.data.originalSource;
 
-                 var over =e.data.over;
-                 var overContainer=e.data.overContainer;
+             //const droppable = new Draggable.Droppable(document.querySelectorAll(".kanban-column"), {
+             //   draggable: 'div.kanban-item',
+             //   dropzone: 'div.kanban-items-container'
+             // });
 
-                 PMS_Board_State.dragOver = over;
-                 PMS_Board_State.draggingSrc = src;
-                 PMS_Board_State.dragOverContainer = overContainer.children[1];
-              });
-              droppable.on('drag:stop', (e) => {
-             setTimeout(()=>{
-                PMS_Board_State.dragOverContainer
-                         .insertBefore(PMS_Board_State.draggingSrc,PMS_Board_State.dragOver);//new ,oldChild
-                    var  srcele = e.data.originalSource;
-                    srcele.parentElement.className="kanban-items-container scrollbar";
-                },100);
-              });
-                  boardContainer.appendChild(columnForAdd);
+             // droppable.on('drag:over',(e)=>{
+
+             //    var src = e.data.originalSource;
+
+             //    var over =e.data.over;
+             //    var overContainer=e.data.overContainer;
+
+             //    PMS_Board_State.dragOver = over;
+             //    PMS_Board_State.draggingSrc = src;
+             //    PMS_Board_State.dragOverContainer = overContainer.children[1];
+             // });
+
+
+             //  droppable.on('drag:stop', (e) => {
+             //setTimeout(()=>{
+             //    try {
+             //        if (PMS_Board_State.dragOver)
+             //        PMS_Board_State.dragOverContainer
+             //            .insertBefore(PMS_Board_State.draggingSrc, PMS_Board_State.dragOver);//new ,oldChild
+             //    } catch (ex) {
+             //        //Ignore
+             //    }
+             //    let srcele = e.data.originalSource;
+             //    srcele.parentElement.className = "kanban-items-container scrollbar";
+             //   },100);
+             //       });
+
+                    draggableInit();
+                    let lastChild = boardContainer.children[boardContainer.children.length-1];
+
+                    console.log(lastChild, boardContainer.children);
+
+                    boardContainer.appendChild(columnForAdd);
+
+
+                    //Reset events for add for each element for the column add form.
+                    Array.prototype.forEach.bind(boardContainer.children)(col => {
+
+                             RestEventForAddItems(col);
+                    });
                 });
             }
         }
+
 
         return {
             Init:Init
