@@ -805,34 +805,38 @@ var draggableInit = function draggableInit() {
   var columnContainers = document.querySelectorAll(Selectors.KANBAN_ITEMS_CONTAINER);
   var container = document.querySelector(Selectors.KANBAN_CONTAINER);
 
-  if (columnContainers.length) {
-    // Initialize Sortable
-    var sortable = new window.Draggable.Sortable(columnContainers, {
-      draggable: Selectors.KANBAN_ITEM,
-      delay: 200,
-      mirror: {
-        appendTo: Selectors.BODY,
-        constrainDimensions: true
-      },
-      scrollable: {
-        draggable: Selectors.KANBAN_ITEM,
-        scrollableElements: [].concat(_toConsumableArray(columnContainers), [container])
-      }
-    }); // Hide form when drag start
+    if (columnContainers.length) {
+        // Initialize Sortable
+        var sortable = new window.Draggable.Sortable(columnContainers, {
+            draggable: Selectors.KANBAN_ITEM,
+            delay: 200,
+            mirror: {
+                appendTo: Selectors.BODY,
+                constrainDimensions: true
+            },
+            scrollable: {
+                draggable: Selectors.KANBAN_ITEM,
+                scrollableElements: [].concat(_toConsumableArray(columnContainers), [container])
+            }
+        }); // Hide form when drag start
 
-    sortable.on(Events.DRAG_START, function () {
-      columns.forEach(function (column) {
-        utils.hasClass(column, ClassNames.FORM_ADDED) && column.classList.remove(ClassNames.FORM_ADDED);
-      });
-    }); // Place forms and other contents bottom of the sortable container
+        sortable.on(Events.DRAG_START, function () {
 
-    sortable.on(Events.DRAG_STOP, function (_ref2) {
-      var el = _ref2.data.source;
-      var columnContainer = el.closest(Selectors.KANBAN_ITEMS_CONTAINER);
-      var form = columnContainer.querySelector(Selectors.ADD_CARD_FORM);
-      !el.nextElementSibling && columnContainer.appendChild(form);
-    });
-  }
+            columns.forEach(function (column) {
+                utils.hasClass(column, ClassNames.FORM_ADDED) && column.classList.remove(ClassNames.FORM_ADDED);
+            });
+        }); // Place forms and other contents bottom of the sortable container
+
+        sortable.on(Events.DRAG_STOP, function (_ref2) {
+
+            var el = _ref2.data.source;
+            var columnContainer = el.closest(Selectors.KANBAN_ITEMS_CONTAINER);
+            var form = columnContainer.querySelector(Selectors.ADD_CARD_FORM);
+            !el.nextElementSibling && columnContainer.appendChild(form);
+        });
+
+        return sortable;
+    } else return null;
 };
 /* -------------------------------------------------------------------------- */
 

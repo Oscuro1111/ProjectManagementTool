@@ -1,5 +1,16 @@
+
 const BoardController = (
     dom => {
+        const PMS_Board_State = {
+            dragOver: null,
+            draggingSrc: null,
+            dragOverContainer: null,
+            shiftColumnObj: null,
+            shiftTasksObj: null,
+            lockColumn:true,
+            resetColumnEvent: () => (PMS_Board_State.shiftColumnObj = setColumnDraginit()),
+            resetTasksEvent: () => (PMS_Board_State.shiftTasksObj=draggableInit())
+        }
 
         const getById = (id) => dom.getElementById(id);
 
@@ -65,12 +76,16 @@ const BoardController = (
             "RootColumn":"PMS-Root-Column",
             
         };
+
+
+
         const Init = function () {
 
             const RestEventForAddItems = (column) => {
 
-                if ($) {
 
+
+                if ($) {
                     //Add  Button  handler
                     $(column).find("button[class~='btn-add-card']").click(function (e) {
                         e.preventDefault();
@@ -85,12 +100,7 @@ const BoardController = (
                         e.stopPropagation();
 
                         column.className = (column.className + "").replace(/\sform-added/gi, "");
-
-                        console.log(column.className);
-
                     });
-
-
 
                     $(column).find("button[class~='pms-kanban-btn-add-item']").click(function (e) {
                         e.preventDefault();
@@ -106,7 +116,6 @@ const BoardController = (
 
                             let value = form.get("taskTitle") || "";
 
-                            
                             if (value.length == 0) {
 
                                 alert("Task title cannot be empty!");
@@ -128,15 +137,11 @@ const BoardController = (
                                 }
                             )();//END
 
-
-
-
-
-
                         }
                     });
                 }
-            }
+            }//End of ResetEventItems
+
             const boardContainer = getById(ComponentsId.BoardContainer);
             const boardAddColumnBtn = getById(ComponentsId.AddColumnBtn);
 
@@ -159,7 +164,8 @@ const BoardController = (
                         alert("title cannot be empty!");
                         return;
                     }
-                   boardContainer.removeChild(columnForAdd); 
+
+                    boardContainer.removeChild(columnForAdd); 
 
                     //IMPORTANT NOTE:
                     //Doing This will force re-render the while parent node in which this appending 
@@ -167,43 +173,11 @@ const BoardController = (
                     //Resetting the event  if any attached to prev one .
                     boardContainer.innerHTML += views.column(title, boardContainer.children.length, boardContainer.children.length);
 
+                    PMS_Board_State.resetTasksEvent();
 
-             //const droppable = new Draggable.Droppable(document.querySelectorAll(".kanban-column"), {
-             //   draggable: 'div.kanban-item',
-             //   dropzone: 'div.kanban-items-container'
-             // });
+                    //------------------------------------------------------------------------------
+                   
 
-             // droppable.on('drag:over',(e)=>{
-
-             //    var src = e.data.originalSource;
-
-             //    var over =e.data.over;
-             //    var overContainer=e.data.overContainer;
-
-             //    PMS_Board_State.dragOver = over;
-             //    PMS_Board_State.draggingSrc = src;
-             //    PMS_Board_State.dragOverContainer = overContainer.children[1];
-             // });
-
-
-             //  droppable.on('drag:stop', (e) => {
-             //setTimeout(()=>{
-             //    try {
-             //        if (PMS_Board_State.dragOver)
-             //        PMS_Board_State.dragOverContainer
-             //            .insertBefore(PMS_Board_State.draggingSrc, PMS_Board_State.dragOver);//new ,oldChild
-             //    } catch (ex) {
-             //        //Ignore
-             //    }
-             //    let srcele = e.data.originalSource;
-             //    srcele.parentElement.className = "kanban-items-container scrollbar";
-             //   },100);
-             //       });
-
-                    draggableInit();
-                    let lastChild = boardContainer.children[boardContainer.children.length-1];
-
-                    console.log(lastChild, boardContainer.children);
 
                     boardContainer.appendChild(columnForAdd);
 
@@ -213,10 +187,161 @@ const BoardController = (
 
                              RestEventForAddItems(col);
                     });
+
+                 
                 });
             }
-        }
 
+
+            if ($) {
+                $("button#pms-kanban-btn-lock-column").click(function (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+
+
+                    const onLock = () => {
+                        let srcBtn = e.target;
+
+                        srcBtn.childNodes[srcBtn.childNodes.length - 1].data = "Lock Mode";
+
+
+                        srcBtn.removeChild(srcBtn.children[0]);
+
+                        let span = dom.createElement("span");
+                        span.className = "fas fa-lock me-2";
+
+                        srcBtn.insertBefore(span,srcBtn.firstChild);
+
+
+                    }
+
+
+                    const onUnock = () => {
+                        let srcBtn = e.target;
+
+
+                        srcBtn.childNodes[srcBtn.childNodes.length-1].data="Customization Mode";
+
+                        srcBtn.removeChild(srcBtn.children[0]);
+
+                        let span = dom.createElement("span");
+                        span.className = "fas fa-unlock me-2";
+
+                        srcBtn.insertBefore(span, srcBtn.firstChild);
+
+                    }
+
+
+                    if (PMS_Board_State.lockColumn) {
+                        //is locked
+
+
+                        //then unlock
+                        if (PMS_Board_State.shiftTasksObj) {
+                            PMS_Board_State.shiftTasksObj.destroy();
+                        }
+
+                        PMS_Board_State.shiftTasksObj = null;
+
+                        PMS_Board_State.resetColumnEvent();
+                        PMS_Board_State.lockColumn = false;
+                        onUnock();
+
+                    } else {
+                        //is not locked
+
+
+                        //locke the column
+                        //then unlock
+                        if (PMS_Board_State.shiftColumnObj) {
+
+                            PMS_Board_State.shiftColumnObj.destroy();
+                            PMS_Board_State.shiftColumnObj = null;
+                        }
+
+
+
+                        PMS_Board_State.resetTasksEvent();
+                        PMS_Board_State.lockColumn = true;
+                        onLock();
+
+
+                    }
+                });
+            }
+
+
+            //During initialization
+            if (PMS_Board_State.shiftTasksObj == null) {
+                PMS_Board_State.resetTasksEvent();
+            }
+        }//End of Init function definition 
+
+
+
+        //Enable Drag and drop for Board Column
+        var setColumnDraginit =()=>{
+            var Selectors = {
+                BODY: 'body',
+                KANBAN_CONTAINER: 'div.content',
+                KABNBAN_COLUMN: 'div.content',
+                KANBAN_ITEMS_CONTAINER: 'div.kanban-container',
+                KANBAN_ITEM: '.kanban-column',
+                ADD_CARD_FORM: '#PMS-Kanban-board-WithAddColumnForm',
+            };
+            var Events = {
+                DRAG_START: 'drag:start',
+                DRAG_STOP: 'drag:stop'
+            };
+            var ClassNames = {
+                FORM_ADDED: '"bg-100 p-card rounded-lg transition-none collapse"'
+            };
+            var columns = document.querySelectorAll("div.content");
+            var columnContainers = document.querySelectorAll("div.kanban-container");
+         
+
+            if (columnContainers.length) {
+                // Initialize Sortable
+                var sortable = new window.Draggable.Sortable(columnContainers, {
+                    draggable: ".kanban-column",
+                    delay: 100,
+                
+                    swapAnimation: {
+                        duration: 200,
+                        easingFunction: 'ease-in-out',
+                    },
+                    scrollable: {
+                        draggable: "kanban-column",
+                        scrollableElements: [...columnContainers]
+                    }
+                }); // Hide form when drag start
+
+                sortable.on(Events.DRAG_START, function (e) {
+
+
+                    columns.forEach(function (column) {
+                        utils.hasClass(column, ClassNames.FORM_ADDED) && column.classList.remove(ClassNames.FORM_ADDED);
+                    });
+
+                });
+                // Place forms and other contents bottom of the sortable container
+
+                sortable.on(Events.DRAG_STOP, function (_ref2) {
+  
+                    var el = _ref2.data.source;
+                    var columnContainer = el.closest(Selectors.KANBAN_ITEMS_CONTAINER);
+                    var form = columnContainer.querySelector(Selectors.ADD_CARD_FORM);
+                    !el.nextElementSibling && columnContainer.appendChild(form);
+                });
+
+                return sortable;
+               
+            }
+        };//End of setColumn DragEvents.
+
+
+        //Set up lock column button
+      
 
         return {
             Init:Init
@@ -224,4 +349,46 @@ const BoardController = (
     }
 )(document);
 
+
+
 BoardController.Init();
+
+/*
+ 
+ const droppable = new Draggable.Droppable(document.querySelectorAll("div.content"), {
+                draggable: 'div.kanban-column',
+                dropzone:  'div.kanban-container'
+              });
+
+           droppable.on('drag:over',(e)=>{
+
+               var src = e.data.originalSource;
+
+                 var over =e.data.over;
+                var overContainer=e.data.overContainer;
+
+                PMS_Board_State.dragOver = over;
+               PMS_Board_State.draggingSrc = src;
+               PMS_Board_State.dragOverContainer = overContainer.children[1];
+              });
+
+
+            droppable.on('drag:stop', (e) => {
+
+                
+
+                setTimeout(() => {
+                try {
+                     if (PMS_Board_State.dragOver)
+                     PMS_Board_State.dragOverContainer
+                         .insertBefore(PMS_Board_State.draggingSrc, PMS_Board_State.dragOver);//new ,oldChild
+                 } catch (ex) {
+                     //Ignore
+                 }
+                 let srcele = e.data.originalSource;
+                 srcele.parentElement.className = "kanban-container scrollbar me-n3";
+               },100);
+                    });//kanban column draggable .
+
+
+ */
