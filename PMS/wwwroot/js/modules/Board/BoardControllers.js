@@ -1,23 +1,88 @@
+function PMS_Kanban_Plugins() {
+
+}
 
 const BoardController = (
     dom => {
+
+        var pm_module_counter = 0;
+
+        const Counter=_=> ++pm_module_counter;
+
+        const PMS_Board_Plugins = {
+            "onDragStop": [],
+            "onDragStart": []
+        }
+
+
+        const PMS_Board_Module_Name = {
+            UPDATE_COLUMN_COUNTER: Counter(),
+        }
+
+        PMS_Kanban_Plugins.prototype.plugins = PMS_Board_Plugins;
+
+
         const PMS_Board_State = {
             dragOver: null,
             draggingSrc: null,
             dragOverContainer: null,
             shiftColumnObj: null,
             shiftTasksObj: null,
-            lockColumn:true,
-            resetColumnEvent: () => (PMS_Board_State.shiftColumnObj = setColumnDraginit()),
-            resetTasksEvent: () => (PMS_Board_State.shiftTasksObj=draggableInit())
+            lockColumn: true,
+            resetColumnEvent: () => {
+
+                return (PMS_Board_State.shiftColumnObj = setColumnDraginit());
+            },
+            resetTasksEvent: () => {
+
+
+
+                var dragObj = draggableInit();
+
+                if (dragObj) {
+
+
+                    PMS_Board_State.shiftTasksObj = dragObj;
+
+                    dragObj.on("drag:stop", (e) => {
+
+              
+                        //Custom  hookes for kanban board
+                        if (PMS_Kanban_Plugins.prototype.plugins) {
+                            PMS_Kanban_Plugins.prototype.plugins.onDragStop.forEach(_module => {
+
+                                 let module = _module.module;
+
+                                if (_module.module_name == PMS_Board_Module_Name.UPDATE_COLUMN_COUNTER)
+                                    setTimeout(() => {
+
+                                        module(e);
+                                        module({
+                                            "data": {
+                                                "originalSource": {
+                                                    "parentElement": e.data.sourceContainer
+                                                }
+                                            }
+                                        });
+
+                                    }, 200);
+
+                                else
+                                    module(e);
+                            });
+                        }
+                    });
+                    return dragObj;
+                }
+              }
         }
 
         const getById = (id) => dom.getElementById(id);
 
         const BoardViews = function BoardComponentViews() {
-            this.column = (columnHeaderTitle, dbId, totalItems) => `<div class="kanban-column" id=PMS-Kanban-Column-${dbId}>
+            this.column = (columnHeaderTitle, dbId) => `<div class="kanban-column" data-kanban-column="kb-column" id=PMS-Kanban-Column-${dbId}>
             <div class="kanban-column-header" id=PMS-Kanban-Column-Header-${dbId}>
-                <h5 class="fs-0 mb-0">${columnHeaderTitle}<span class="text-500" data-total-items="total-items">(${totalItems})</span></h5>
+                <h5 class="fs-0 mb-0" data-column-title="${dbId}">${columnHeaderTitle}<span class="text-500" data-total-items="total-items">(0)</span></h5>
                 <div class="dropdown font-sans-serif btn-reveal-trigger">
                     <button class="btn btn-sm btn-reveal py-0 px-2" type="button" id="PMS-kanbanColumn-${dbId}" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><svg class="svg-inline--fa fa-ellipsis-h fa-w-16" aria-hidden="true" focusable="false" data-prefix="fas" data-icon="ellipsis-h" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" data-fa-i2svg=""><path fill="currentColor" d="M328 256c0 39.8-32.2 72-72 72s-72-32.2-72-72 32.2-72 72-72 72 32.2 72 72zm104-72c-39.8 0-72 32.2-72 72s32.2 72 72 72 72-32.2 72-72-32.2-72-72-72zm-352 0c-39.8 0-72 32.2-72 72s32.2 72 72 72 72-32.2 72-72-32.2-72-72-72z"></path></svg><!-- <span class="fas fa-ellipsis-h"></span> Font Awesome fontawesome.com --></button>
                     <div class="dropdown-menu dropdown-menu-end py-0" aria-labelledby="PMS-kanbanColumn-${dbId}">
@@ -54,7 +119,7 @@ const BoardController = (
                                                 <button class="btn btn-sm btn-falcon-default kanban-item-dropdown-btn hover-actions" type="button" data-boundary="viewport" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><svg class="svg-inline--fa fa-ellipsis-h fa-w-16" data-fa-transform="shrink-2" aria-hidden="true" focusable="false" data-prefix="fas" data-icon="ellipsis-h" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" data-fa-i2svg="" style="transform-origin: 0.5em 0.5em;"><g transform="translate(256 256)"><g transform="translate(0, 0)  scale(0.875, 0.875)  rotate(0 0 0)"><path fill="currentColor" d="M328 256c0 39.8-32.2 72-72 72s-72-32.2-72-72 32.2-72 72-72 72 32.2 72 72zm104-72c-39.8 0-72 32.2-72 72s32.2 72 72 72 72-32.2 72-72-32.2-72-72-72zm-352 0c-39.8 0-72 32.2-72 72s32.2 72 72 72 72-32.2 72-72-32.2-72-72-72z" transform="translate(-256 -256)"></path></g></g></svg><!-- <span class="fas fa-ellipsis-h" data-fa-transform="shrink-2"></span> Font Awesome fontawesome.com --></button>
                                                 <div class="dropdown-menu dropdown-menu-end py-0">
                                                     <a class="dropdown-item" href="#!">Add Card</a><a class="dropdown-item" href="#!">Edit</a><a class="dropdown-item" href="#!">Copy link</a>
-                                                    <div class="dropdown-divider"></div><a class="dropdown-item text-danger" href="#!">Remove</a>
+                                                    <div class="dropdown-divider"></div><a class="dropdown-item text-danger pms-kanban-btn-item-delete" href="#!" >Remove</a>
                                                 </div>
                                             </div>
                                         </div>
@@ -82,6 +147,8 @@ const BoardController = (
         const Init = function () {
 
             const RestEventForAddItems = (column) => {
+
+
 
 
 
@@ -133,12 +200,60 @@ const BoardController = (
 
                                      kanbanContainer.innerHTML += views.columnItem(value, kanbanContainer.children.length);
 
-                                     kanbanContainer.appendChild(formElement);
+                                    //triggering Modules
+                                    PMS_Kanban_Plugins.prototype.plugins.onDragStop.forEach(_module => {
+
+                                        if (_module.module_name != PMS_Board_Module_Name.UPDATE_COLUMN_COUNTER) {
+                                            return;
+                                        }
+
+                                        let module = _module.module;
+
+                                        let last = kanbanContainer.lastElementChild;
+
+                                        kanbanContainer.appendChild(formElement);
+
+                                        module({ "data": { "originalSource": last } });
+
+
+                                    });
+
+                                    $(column).find("a[class~=pms-kanban-btn-item-delete]").click(function (e) {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+
+                                        let next = e.target;
+
+
+                                        while ((next.classList != "kanban-item") && (next = next.parentElement));
+
+                                        let container = next && next.parentElement || {};
+
+                                        if (container.removeChild && container.removeChild(next))
+                                            PMS_Kanban_Plugins.prototype.plugins
+                                                .onDragStop.forEach(_module => _module.module_name == PMS_Board_Module_Name.UPDATE_COLUMN_COUNTER&&_module.module({
+                                                data: {
+                                                    originalSource: {
+                                                        parentElement: container
+                                                    }
+                                                }
+                                            }));
+
+
+                                    });
+
+
+
                                 }
                             )();//END
 
                         }
                     });
+
+
+
+                    //Set remove item button
+
                 }
             }//End of ResetEventItems
 
@@ -171,14 +286,12 @@ const BoardController = (
                     //Doing This will force re-render the while parent node in which this appending 
                     //Re-rendering will create new nodes and old and any events will  be removeds so 
                     //Resetting the event  if any attached to prev one .
-                    boardContainer.innerHTML += views.column(title, boardContainer.children.length, boardContainer.children.length);
+                    boardContainer.innerHTML += views.column(title, boardContainer.children.length);
 
                     PMS_Board_State.resetTasksEvent();
 
                     //------------------------------------------------------------------------------
-                   
-
-
+               
                     boardContainer.appendChild(columnForAdd);
 
 
@@ -343,11 +456,58 @@ const BoardController = (
         //Set up lock column button
       
 
+
+        //update  total number of items  in column header. 
+        PMS_Board_Plugins.onDragStop.push(
+            {
+                module_name: PMS_Board_Module_Name.UPDATE_COLUMN_COUNTER,
+                module: (e) => {
+                let item = e.data.originalSource;
+
+                if (item instanceof HTMLDivElement || item.parentElement) {
+
+                    let parent = item.parentElement;
+
+                    let totalTask = parent.children.length-1;
+
+                    let next = parent.parentElement;
+
+                    while (!next.getAttribute("data-kanban-column")  && (next = next.parentElement));
+
+                    next && (next = next.firstElementChild) ? (
+                        _=> {
+                            while (next.className != "kanban-column-header" && (next = next.nextElementSibling));
+
+                            next && (next = next.firstElementChild) ? (
+                                _ => {
+                                    while (!next.getAttribute("data-column-title") && (next = next.nextElementSibling));
+
+                                    next && (next = next.firstElementChild) ? (
+                                        _ => {
+                                            while (!next.getAttribute("data-total-items") && (next = next.nextElementSibling));
+
+                                            next && (next.innerText = ` (${totalTask})`);
+
+                                        }
+                                    )() : null;
+                                }
+                                )() : null;      
+                          }
+                    )() : null;
+
+
+                   
+    }
+ }}
+        );
+
+       
         return {
             Init:Init
         };
     }
 )(document);
+
 
 
 

@@ -830,6 +830,8 @@ var draggableInit = function draggableInit() {
         sortable.on(Events.DRAG_STOP, function (_ref2) {
 
             var el = _ref2.data.source;
+
+
             var columnContainer = el.closest(Selectors.KANBAN_ITEMS_CONTAINER);
             var form = columnContainer.querySelector(Selectors.ADD_CARD_FORM);
             !el.nextElementSibling && columnContainer.appendChild(form);
