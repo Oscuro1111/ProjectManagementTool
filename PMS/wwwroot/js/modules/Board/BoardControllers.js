@@ -17,6 +17,7 @@ const BoardController = (
 
         const PMS_Board_Module_Name = {
             UPDATE_COLUMN_COUNTER: Counter(),
+
         }
 
         PMS_Kanban_Plugins.prototype.plugins = PMS_Board_Plugins;
@@ -87,7 +88,7 @@ const BoardController = (
                     <button class="btn btn-sm btn-reveal py-0 px-2" type="button" id="PMS-kanbanColumn-${dbId}" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><svg class="svg-inline--fa fa-ellipsis-h fa-w-16" aria-hidden="true" focusable="false" data-prefix="fas" data-icon="ellipsis-h" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" data-fa-i2svg=""><path fill="currentColor" d="M328 256c0 39.8-32.2 72-72 72s-72-32.2-72-72 32.2-72 72-72 72 32.2 72 72zm104-72c-39.8 0-72 32.2-72 72s32.2 72 72 72 72-32.2 72-72-32.2-72-72-72zm-352 0c-39.8 0-72 32.2-72 72s32.2 72 72 72 72-32.2 72-72-32.2-72-72-72z"></path></svg><!-- <span class="fas fa-ellipsis-h"></span> Font Awesome fontawesome.com --></button>
                     <div class="dropdown-menu dropdown-menu-end py-0" aria-labelledby="PMS-kanbanColumn-${dbId}">
                         <a class="dropdown-item" href="#!">Add Card</a><a class="dropdown-item" href="#!" id=PMS-Btn-Kanban-Column-Edit-${dbId}>Edit</a><a class="dropdown-item" href="#!" id=PMS-Btn-Kanban-Column-CopyLink-${dbId}>Copy link</a>
-                        <div class="dropdown-divider"></div><a class="dropdown-item text-danger" href="#!" id=PMS-Btn-Kanban-Column-Remove-${dbId}>Remove</a>
+                        <div class="dropdown-divider"></div><a class="dropdown-item text-danger pms-kanban-btn-column-delete" href="#!" id=PMS-Btn-Kanban-Column-Remove-${dbId}>Remove</a>
                     </div>
                 </div>      
             </div>
@@ -106,7 +107,7 @@ const BoardController = (
             </div>
             <div class="kanban-column-footer">
                 <button class="btn btn-link btn-sm d-block w-100 btn-add-card text-decoration-none text-600" type="button" data-add-card="add-card-item" id="PMS-Btn-Kanban-Column-AddAnotherCard-${dbId}"><svg class="svg-inline--fa fa-plus fa-w-14 me-2" aria-hidden="true" focusable="false" data-prefix="fas" data-icon="plus" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" data-fa-i2svg="">
-                <path fill="currentColor" d="M416 208H272V64c0-17.67-14.33-32-32-32h-32c-17.67 0-32 14.33-32 32v144H32c-17.67 0-32 14.33-32 32v32c0 17.67 14.33 32 32 32h144v144c0 17.67 14.33 32 32 32h32c17.67 0 32-14.33 32-32V304h144c17.67 0 32-14.33 32-32v-32c0-17.67-14.33-32-32-32z"></path></svg><!-- <span class="fas fa-plus me-2"></span> Font Awesome fontawesome.com -->Add another card</button>
+                <path fill="currentColor" d="M416 208H272V64c0-17.67-14.33-32-32-32h-32c-17.67 0-32 14.33-32 32v144H32c-17.67 0-32 14.33-32 32v32c0 17.67 14.33 32 32 32h144v144c0 17.67 14.33 32 32 32h32c17.67 0 32-14.33 32-32V304h144c17.67 0 32-14.33 32-32v-32c0-17.67-14.33-32-32-32z"></path></svg><!-- <span class="fas fa-plus me-2"></span> Font Awesome fontawesome.com -->Add New Task</button>
             </div>
         </div>`;
 
@@ -148,6 +149,27 @@ const BoardController = (
 
             const RestEventForAddItems = (column) => {
 
+                const resetItemDeletEvent = _column => $(_column).find("a[class~=pms-kanban-btn-item-delete]").click(function (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+
+                    let next = e.target;
+
+                    while ((next.classList != "kanban-item") && (next = next.parentElement));
+
+                    let container = next && next.parentElement || {};
+
+                    if (container.removeChild && container.removeChild(next))
+                        PMS_Kanban_Plugins.prototype.plugins
+                            .onDragStop.forEach(_module => _module.module_name == PMS_Board_Module_Name.UPDATE_COLUMN_COUNTER
+                                && _module.module({
+                                    data: {
+                                        originalSource: {
+                                            parentElement: container
+                                        }
+                                    }
+                                }));
+                });//end of resetdeletevent
 
 
 
@@ -191,14 +213,14 @@ const BoardController = (
 
                             //Handle Putting new Task item into kanban column
                             (
-                                _=> {
-                                     let views = new BoardViews();
+                                _ => {
+                                    let views = new BoardViews();
 
-                                     let kanbanContainer = formElement.parentElement;
+                                    let kanbanContainer = formElement.parentElement;
 
-                                     kanbanContainer.removeChild(formElement);
+                                    kanbanContainer.removeChild(formElement);
 
-                                     kanbanContainer.innerHTML += views.columnItem(value, kanbanContainer.children.length);
+                                    kanbanContainer.innerHTML += views.columnItem(value, kanbanContainer.children.length);
 
                                     //triggering Modules
                                     PMS_Kanban_Plugins.prototype.plugins.onDragStop.forEach(_module => {
@@ -218,41 +240,33 @@ const BoardController = (
 
                                     });
 
-                                    $(column).find("a[class~=pms-kanban-btn-item-delete]").click(function (e) {
-                                        e.preventDefault();
-                                        e.stopPropagation();
+                                    resetItemDeletEvent(column);
 
-                                        let next = e.target;
-
-
-                                        while ((next.classList != "kanban-item") && (next = next.parentElement));
-
-                                        let container = next && next.parentElement || {};
-
-                                        if (container.removeChild && container.removeChild(next))
-                                            PMS_Kanban_Plugins.prototype.plugins
-                                                .onDragStop.forEach(_module => _module.module_name == PMS_Board_Module_Name.UPDATE_COLUMN_COUNTER&&_module.module({
-                                                data: {
-                                                    originalSource: {
-                                                        parentElement: container
-                                                    }
-                                                }
-                                            }));
-
-
-                                    });
-
-
-
-                                }
+                               }
                             )();//END
 
                         }
                     });
 
 
+                    $(column).find("a[class~=pms-kanban-btn-column-delete]").click(function (e) {
+                        e.preventDefault();
+                        e.stopPropagation();
 
-                    //Set remove item button
+                        let col = e.target;
+                        let next = col.parentElement;
+
+                        while (!(/kb-column/g.test(next.getAttribute("data-kanban-column")))
+                                               && (next = next.parentElement));
+
+                        let container = next && next.parentElement;
+
+                        container.removeChild(next);                 
+                    });
+
+
+
+                    resetItemDeletEvent(column);
 
                 }
             }//End of ResetEventItems
@@ -263,6 +277,7 @@ const BoardController = (
             const columnForAdd = getById(ComponentsId.AddColumnWithForm);
 
             const form = getById(ComponentsId.AddColumnForm);
+
 
             if (boardAddColumnBtn && boardContainer) {
 
@@ -307,6 +322,7 @@ const BoardController = (
 
 
             if ($) {
+
                 $("button#pms-kanban-btn-lock-column").click(function (e) {
                     e.preventDefault();
                     e.stopPropagation();
